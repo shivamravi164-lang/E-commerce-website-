@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velora — Shop Electronics, Fashion, Beauty & More</title>
+<meta name="description" content="Velora is a premium online store for electronics, fashion, beauty, home & more — great prices, fast delivery.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div>
+      <div class="hero-eyebrow">New Season Arrivals</div>
+      <h1>Everyday finds, elevated.</h1>
+      <p class="lede">From electronics to essentials — Velora curates quality products at honest prices, delivered fast to your door.</p>
+      <div class="hero-cta">
+        <a href="shop.html" class="btn btn-primary">Shop Now</a>
+        <a href="deals.html" class="btn btn-outline">View Today's Deals</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img src="https://picsum.photos/seed/velora-hero/900/720" alt="Featured product collection">
+      <div class="hero-art-tag"><span class="dot"></span> 40+ curated brands, one storefront</div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Shop by Category</h2>
+        <p>Find exactly what you're looking for.</p>
+      </div>
+    </div>
+    <div class="cat-grid" id="home-categories"></div>
+  </div>
+</section>
+
+<!-- Featured -->
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Featured Products</h2><p>Hand-picked picks our team loves right now.</p></div>
+      <a href="shop.html" class="view-all">View All →</a>
+    </div>
+    <div class="product-grid" id="featured-products"></div>
+  </div>
+</section>
+
+<!-- Trending -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Trending Now</h2><p>What everyone's adding to cart this week.</p></div>
+      <a href="shop.html" class="view-all">View All →</a>
+    </div>
+    <div class="product-grid" id="trending-products"></div>
+  </div>
+</section>
+
+<!-- Offer strip -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="offer-strip">
+      <a href="shop.html?category=fashion" class="offer-card o1"><h3>Fashion Refresh</h3><p>Up to 30% off new arrivals</p></a>
+      <a href="shop.html?category=electronics" class="offer-card o2"><h3>Tech Essentials</h3><p>Save big on audio & accessories</p></a>
+      <a href="deals.html" class="offer-card o3"><h3>Flash Sale</h3><p>Limited-time deals, ends soon</p></a>
+    </div>
+  </div>
+</section>
+
+<!-- Best sellers -->
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Best Sellers</h2><p>Loved by thousands of Velora shoppers.</p></div>
+      <a href="shop.html" class="view-all">View All →</a>
+    </div>
+    <div class="product-grid" id="bestseller-products"></div>
+  </div>
+</section>
+
+<!-- Reviews -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>What Customers Say</h2><p>Real reviews from real Velora shoppers.</p></div>
+    </div>
+    <div class="review-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>"Ordered a pair of the Drift running shoes and they arrived in two days — genuinely comfortable and the discount made it a steal."</p>
+        <div class="review-name">Ritika Malhotra</div>
+        <div class="review-role">Verified Buyer, Ludhiana</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>"The checkout was smooth and my Nimbus headphones look exactly like the photos. Will definitely order again."</p>
+        <div class="review-name">Arjun Kapoor</div>
+        <div class="review-role">Verified Buyer, Pune</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★☆</div>
+        <p>"Great range of categories in one place. Customer support helped me track my order within minutes."</p>
+        <div class="review-name">Sana Sheikh</div>
+        <div class="review-role">Verified Buyer, Ahmedabad</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About / Contact -->
+<section class="section" id="about" style="background:var(--surface);">
+  <div class="container" style="max-width:820px;">
+    <h2>About Velora</h2>
+    <p>Velora started with a simple idea: online shopping should feel curated, not overwhelming. We partner with makers across electronics, fashion, beauty, and home goods to bring together a catalog that's genuinely worth browsing — at prices that don't require waiting for a sale.</p>
+    <p>Every product on Velora is checked for quality and value before it reaches the shelf, and our support team is on hand for anything from sizing questions to order tracking.</p>
+  </div>
+</section>
+<section class="section" id="contact">
+  <div class="container" style="max-width:820px;">
+    <h2>Contact Us</h2>
+    <p>Have a question about an order, a product, or a return? Reach out — we typically reply within one business day.</p>
+    <div class="form-grid" style="max-width:520px;">
+      <div class="form-field"><label>Email</label><input type="email" value="support@velora-shop.example" readonly></div>
+      <div class="form-field"><label>Phone</label><input type="tel" value="1800-123-4567" readonly></div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter">
+  <div class="container">
+    <h2>Get 10% off your first order</h2>
+    <p>Subscribe for new arrivals, restocks, and members-only deals.</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault(); showToast('Subscribed! Check your inbox for 10% off.'); this.reset();">
+      <input type="email" required placeholder="Enter your email">
+      <button class="btn btn-brass" type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+  renderShell("index");
+
+  document.getElementById("home-categories").innerHTML = CATEGORIES.map(c => `
+    <a class="cat-tile" href="shop.html?category=${c.id}">
+      <div class="cat-ico">${c.label.charAt(0)}</div>
+      <span>${c.label}</span>
+    </a>`).join("");
+
+  renderProductGrid("featured-products", PRODUCTS.filter(p => p.tags.includes("featured")).slice(0, 4));
+  renderProductGrid("trending-products", PRODUCTS.filter(p => p.tags.includes("trending")).slice(0, 4));
+  renderProductGrid("bestseller-products", PRODUCTS.filter(p => p.tags.includes("bestseller")).slice(0, 4));
+</script>
+</body>
+</html>

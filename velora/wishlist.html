@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Wishlist — Velora</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<div class="container page-head">
+  <div class="breadcrumb"><a href="index.html">Home</a> / Wishlist</div>
+  <h1 style="font-size:1.9rem;">Your Wishlist</h1>
+</div>
+
+<section class="section" style="padding-top:16px;">
+  <div class="container">
+    <div class="product-grid" id="wishlist-grid"></div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+  renderShell("shop");
+  function renderWishlistPage() {
+    const ids = getWishlist();
+    const products = PRODUCTS.filter(p => ids.includes(p.id));
+    if (!products.length) {
+      document.getElementById("wishlist-grid").innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Your wishlist is empty</h3><p>Tap the heart icon on any product to save it here.</p><a href="shop.html" class="btn btn-primary">Explore Products</a></div>`;
+    } else {
+      renderProductGrid("wishlist-grid", products);
+    }
+  }
+  renderWishlistPage();
+</script>
+</body>
+</html>

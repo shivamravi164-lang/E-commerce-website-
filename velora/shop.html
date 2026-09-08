@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop All Products — Velora</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<div class="container page-head">
+  <div class="breadcrumb"><a href="index.html">Home</a> / Shop</div>
+  <h1 style="font-size:1.9rem;">Shop All Products</h1>
+</div>
+
+<section class="section" style="padding-top:20px;">
+  <div class="container shop-layout">
+    <aside class="filters">
+      <div class="filter-block">
+        <h4>Category</h4>
+        <div id="filter-categories"></div>
+      </div>
+      <div class="filter-block">
+        <h4>Price Range</h4>
+        <div class="price-inputs">
+          <input type="number" id="price-min" placeholder="Min">
+          <span>–</span>
+          <input type="number" id="price-max" placeholder="Max">
+        </div>
+      </div>
+      <div class="filter-block">
+        <h4>Minimum Rating</h4>
+        <div id="filter-ratings"></div>
+      </div>
+      <div class="filter-block">
+        <h4>Minimum Discount</h4>
+        <div id="filter-discounts"></div>
+      </div>
+      <div class="filter-block">
+        <h4>Brand</h4>
+        <div id="filter-brands" style="max-height:180px;overflow-y:auto;"></div>
+      </div>
+      <button class="btn btn-ghost btn-block btn-sm" onclick="clearFilters()">Clear All Filters</button>
+    </aside>
+
+    <div>
+      <div class="shop-toolbar">
+        <span class="result-count" id="result-count"></span>
+        <select id="sort-select">
+          <option value="popular">Sort by: Most Popular</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Highest Rated</option>
+          <option value="newest">Newest</option>
+        </select>
+      </div>
+      <div class="product-grid" id="shop-product-grid"></div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+  renderShell("shop");
+
+  const state = {
+    q: "", categories: new Set(), minPrice: null, maxPrice: null,
+    minRating: 0, minDiscount: 0, brands: new Set(), sort: "popular"
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("q")) state.q = params.get("q");
+  if (params.get("category")) state.categories.add(params.get("category"));
+
+  const BRANDS = [...new Set(PRODUCTS.map(p => p.brand))].sort();
+
+  function renderFilterUI() {
+    document.getElementById("filter-categories").innerHTML = CATEGORIES.map(c => `
+      <label class="filter-row"><input type="checkbox" value="${c.id}" ${state.categories.has(c.id) ? "checked" : ""} onchange="toggleSetFilter('categories', '${c.id}', this.checked)"> ${c.label}</label>
+    `).join("");
+
+    document.getElementById("filter-ratings").innerHTML = [4, 3, 2].map(r => `
+      <label class="filter-row"><input type="radio" name="rating" value="${r}" ${state.minRating === r ? "checked" : ""} onchange="state.minRating = ${r}; applyFilters();"> ${r}★ & above</label>
+    `).join("") + `<label class="filter-row"><input type="radio" name="rating" value="0" ${state.minRating === 0 ? "checked" : ""} onchange="state.minRating = 0; applyFilters();"> Any rating</label>`;
+
+    document.getElementById("filter-discounts").innerHTML = [10, 20, 30].map(d => `
+      <label class="filter-row"><input type="radio" name="discount" value="${d}" ${state.minDiscount === d ? "checked" : ""} onchange="state.minDiscount = ${d}; applyFilters();"> ${d}% or more</label>
+    `).join("") + `<label class="filter-row"><input type="radio" name="discount" value="0" ${state.minDiscount === 0 ? "checked" : ""} onchange="state.minDiscount = 0; applyFilters();"> Any discount</label>`;
+
+    document.getElementById("filter-brands").innerHTML = BRANDS.map(b => `
+      <label class="filter-row"><input type="checkbox" value="${b}" onchange="toggleSetFilter('brands', '${b}', this.checked)"> ${b}</label>
+    `).join("");
+  }
+
+  function toggleSetFilter(key, value, checked) {
+    if (checked) state[key].add(value); else state[key].delete(value);
+    applyFilters();
+  }
+
+  document.getElementById("price-min").addEventListener("input", (e) => { state.minPrice = e.target.value ? Number(e.target.value) : null; applyFilters(); });
+  document.getElementById("price-max").addEventListener("input", (e) => { state.maxPrice = e.target.value ? Number(e.target.value) : null; applyFilters(); });
+  document.getElementById("sort-select").addEventListener("change", (e) => { state.sort = e.target.value; applyFilters(); });
+
+  function clearFilters() {
+    state.categories.clear(); state.brands.clear();
+    state.minPrice = null; state.maxPrice = null; state.minRating = 0; state.minDiscount = 0; state.q = "";
+    document.getElementById("price-min").value = ""; document.getElementById("price-max").value = "";
+    renderFilterUI();
+    applyFilters();
+  }
+
+  function applyFilters() {
+    let results = PRODUCTS.filter(p => {
+      if (state.q) {
+        const q = state.q.toLowerCase();
+        const hay = (p.name + " " + p.brand + " " + getCategoryLabel(p.category)).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (state.categories.size && !state.categories.has(p.category)) return false;
+      if (state.brands.size && !state.brands.has(p.brand)) return false;
+      if (state.minPrice !== null && p.finalPrice < state.minPrice) return false;
+      if (state.maxPrice !== null && p.finalPrice > state.maxPrice) return false;
+      if (p.rating < state.minRating) return false;
+      if (p.discount < state.minDiscount) return false;
+      return true;
+    });
+
+    switch (state.sort) {
+      case "price-asc": results.sort((a, b) => a.finalPrice - b.finalPrice); break;
+      case "price-desc": results.sort((a, b) => b.finalPrice - a.finalPrice); break;
+      case "rating": results.sort((a, b) => b.rating - a.rating); break;
+      case "newest": results.sort((a, b) => b.dateAdded - a.dateAdded); break;
+      default: results.sort((a, b) => b.reviews - a.reviews);
+    }
+
+    document.getElementById("result-count").textContent = `${results.length} product${results.length === 1 ? "" : "s"} found`;
+    renderProductGrid("shop-product-grid", results);
+  }
+
+  renderFilterUI();
+  applyFilters();
+</script>
+</body>
+</html>

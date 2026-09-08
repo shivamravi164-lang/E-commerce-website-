@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Product — Velora</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<div class="container page-head">
+  <div class="breadcrumb" id="pd-breadcrumb"><a href="index.html">Home</a> / <a href="shop.html">Shop</a> / <span id="pd-crumb-name"></span></div>
+</div>
+
+<section class="section" style="padding-top:10px;">
+  <div class="container pd-layout" id="pd-root">
+    <!-- filled by JS -->
+  </div>
+</section>
+
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-head"><div><h2>You Might Also Like</h2></div></div>
+    <div class="product-grid" id="related-products"></div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+  renderShell("shop");
+
+  const id = new URLSearchParams(window.location.search).get("id");
+  const p = getProductById(id);
+
+  if (!p) {
+    document.getElementById("pd-root").innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Product not found</h3><p>It may have been removed.</p><a href="shop.html" class="btn btn-primary">Back to Shop</a></div>`;
+  } else {
+    document.title = p.name + " — Velora";
+    document.getElementById("pd-crumb-name").textContent = p.name;
+
+    const hasSizes = p.sizes && p.sizes.length;
+    const hasColors = p.colors && p.colors.length;
+    let selectedSize = hasSizes ? p.sizes[0] : null;
+    let selectedColor = hasColors ? p.colors[0] : null;
+    let qty = 1;
+
+    document.getElementById("pd-root").innerHTML = `
+      <div>
+        <div class="pd-gallery-main"><img id="pd-main-img" src="${p.images[0]}" alt="${p.name}"></div>
+        <div class="pd-thumbs">
+          ${p.images.map((im, i) => `<img src="${im}" class="${i === 0 ? "active" : ""}" onclick="document.getElementById('pd-main-img').src='${im}'; document.querySelectorAll('.pd-thumbs img').forEach(t=>t.classList.remove('active')); this.classList.add('active');">`).join("")}
+        </div>
+      </div>
+      <div>
+        <span class="pd-brand">${p.brand}</span>
+        <h1 class="pd-title">${p.name}</h1>
+        <div class="pd-rating-row">
+          <span class="pd-rating-badge">${p.rating} ★</span>
+          <span>${p.reviews} ratings</span>
+          <span style="color:var(--primary);font-weight:700;">In Stock</span>
+        </div>
+        <div class="pd-price-row">
+          <span class="pd-price-final">${money(p.finalPrice)}</span>
+          ${p.discount ? `<span class="price-orig">${money(p.price)}</span><span class="price-pct">${p.discount}% off</span>` : ""}
+        </div>
+        <p style="font-size:.85rem;">Inclusive of all taxes</p>
+
+        <div class="pd-offers">
+          <div class="pd-section-label" style="margin-top:0;">Available Offers</div>
+          <ul>
+            <li>🏷️ Extra 5% off with Velora Card</li>
+            <li>🎟️ Use code <strong>VELORA10</strong> at cart for 10% off</li>
+            <li>🚚 Free delivery on orders over ₹999</li>
+          </ul>
+        </div>
+
+        ${hasColors ? `
+        <div class="pd-section-label">Color</div>
+        <div class="swatch-row" id="pd-colors">
+          ${p.colors.map((c, i) => `<button class="swatch ${i === 0 ? "active" : ""}" data-color="${c}" onclick="selectColor('${c}', this)">${c}</button>`).join("")}
+        </div>` : ""}
+
+        ${hasSizes ? `
+        <div class="pd-section-label">Size</div>
+        <div class="swatch-row" id="pd-sizes">
+          ${p.sizes.map((s, i) => `<button class="swatch ${i === 0 ? "active" : ""}" data-size="${s}" onclick="selectSize('${s}', this)">${s}</button>`).join("")}
+        </div>` : ""}
+
+        <div class="pd-section-label">Quantity</div>
+        <div class="qty-selector">
+          <button onclick="changeQty(-1)">−</button>
+          <span id="pd-qty">1</span>
+          <button onclick="changeQty(1)">+</button>
+        </div>
+
+        <div class="pd-cta-row">
+          <button class="btn btn-outline" onclick="addToCart(${p.id}, qtyRef(), optsRef())">Add to Cart</button>
+          <button class="btn btn-primary" onclick="buyNow(${p.id})">Buy Now</button>
+          <button class="wish-btn" style="position:static;" data-id="${p.id}" onclick="toggleWishlist(${p.id})">${ICONS.heart}</button>
+        </div>
+
+        <div class="pd-meta-row">
+          <div>${ICONS.truck}<span>Delivery in 2–5 business days across India</span></div>
+          <div>${ICONS.refresh}<span>7-day easy return &amp; exchange</span></div>
+          <div>${ICONS.shield}<span>100% authentic, quality checked</span></div>
+        </div>
+      </div>
+    `;
+
+    // wishlist active state
+    const wb = document.querySelector(`.wish-btn[data-id="${p.id}"]`);
+    if (wb && getWishlist().includes(p.id)) wb.classList.add("active");
+
+    window.selectColor = (c, el) => { selectedColor = c; document.querySelectorAll("#pd-colors .swatch").forEach(s => s.classList.remove("active")); el.classList.add("active"); };
+    window.selectSize = (s, el) => { selectedSize = s; document.querySelectorAll("#pd-sizes .swatch").forEach(s2 => s2.classList.remove("active")); el.classList.add("active"); };
+    window.changeQty = (d) => { qty = Math.max(1, qty + d); document.getElementById("pd-qty").textContent = qty; };
+    window.qtyRef = () => qty;
+    window.optsRef = () => ({ size: selectedSize, color: selectedColor });
+    window.buyNow = (id) => { addToCart(id, qty, { size: selectedSize, color: selectedColor }); window.location.href = "checkout.html"; };
+
+    // Tabs + specs + description
+    document.getElementById("pd-root").insertAdjacentHTML("afterend", `
+      <div class="container tabs">
+        <div class="tab-heads">
+          <div class="tab-head active" data-tab="desc" onclick="switchTab('desc')">Description</div>
+          <div class="tab-head" data-tab="specs" onclick="switchTab('specs')">Specifications</div>
+          <div class="tab-head" data-tab="reviews" onclick="switchTab('reviews')">Reviews (${p.reviews})</div>
+        </div>
+        <div class="tab-panel active" id="tab-desc"><p style="max-width:70ch;">${p.description}</p></div>
+        <div class="tab-panel" id="tab-specs">
+          <table class="spec-table">
+            ${Object.entries(p.specs).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}
+          </table>
+        </div>
+        <div class="tab-panel" id="tab-reviews">
+          <div class="review-grid">
+            <div class="review-card"><div class="review-stars">★★★★★</div><p>"Exactly as described and arrived faster than expected. Very happy with the quality."</p><div class="review-name">Verified Buyer</div></div>
+            <div class="review-card"><div class="review-stars">★★★★☆</div><p>"Good value for the price. Packaging was solid and everything worked out of the box."</p><div class="review-name">Verified Buyer</div></div>
+            <div class="review-card"><div class="review-stars">★★★★★</div><p>"Would recommend to a friend. Matches the pictures and the size guide was accurate."</p><div class="review-name">Verified Buyer</div></div>
+          </div>
+        </div>
+      </div>
+    `);
+    window.switchTab = (tab) => {
+      document.querySelectorAll(".tab-head").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+      document.querySelectorAll(".tab-panel").forEach(t => t.classList.toggle("active", t.id === "tab-" + tab));
+    };
+
+    const related = PRODUCTS.filter(r => r.category === p.category && r.id !== p.id).slice(0, 4);
+    renderProductGrid("related-products", related);
+  }
+</script>
+</body>
+</html>

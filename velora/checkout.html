@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Velora</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<div class="container page-head">
+  <div class="breadcrumb"><a href="index.html">Home</a> / <a href="cart.html">Cart</a> / Checkout</div>
+  <h1 style="font-size:1.9rem;">Checkout</h1>
+</div>
+
+<section class="section" style="padding-top:16px;" id="checkout-section">
+  <div class="container cart-layout">
+    <div class="form-card">
+      <h3 style="margin-bottom:18px;">Delivery Details</h3>
+      <form id="checkout-form" novalidate>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Full Name</label>
+            <input type="text" id="co-name" required>
+            <div class="field-error">Please enter your full name.</div>
+          </div>
+          <div class="form-field">
+            <label>Mobile Number</label>
+            <input type="tel" id="co-mobile" required>
+            <div class="field-error">Enter a valid 10-digit mobile number.</div>
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" id="co-email" required>
+            <div class="field-error">Enter a valid email address.</div>
+          </div>
+          <div class="form-field full">
+            <label>Address</label>
+            <textarea id="co-address" rows="2" required></textarea>
+            <div class="field-error">Please enter your delivery address.</div>
+          </div>
+          <div class="form-field">
+            <label>City</label>
+            <input type="text" id="co-city" required>
+            <div class="field-error">Please enter your city.</div>
+          </div>
+          <div class="form-field">
+            <label>State</label>
+            <input type="text" id="co-state" required>
+            <div class="field-error">Please enter your state.</div>
+          </div>
+          <div class="form-field">
+            <label>PIN Code</label>
+            <input type="text" id="co-pin" maxlength="6" required>
+            <div class="field-error">Enter a valid 6-digit PIN code.</div>
+          </div>
+        </div>
+
+        <h3 style="margin:26px 0 14px;">Payment Method</h3>
+        <div class="pay-options" id="pay-options">
+          <label class="pay-option active"><input type="radio" name="payment" value="cod" checked> Cash on Delivery</label>
+          <label class="pay-option"><input type="radio" name="payment" value="upi"> UPI</label>
+          <label class="pay-option"><input type="radio" name="payment" value="card"> Credit / Debit Card</label>
+          <label class="pay-option"><input type="radio" name="payment" value="netbanking"> Net Banking</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:26px;">Place Order</button>
+      </form>
+    </div>
+
+    <div class="summary-card" id="checkout-summary"></div>
+  </div>
+</section>
+
+<!-- Order confirmation (hidden until order placed) -->
+<section class="section" id="order-confirmation" style="display:none;">
+  <div class="container" style="max-width:560px; text-align:center;">
+    <div style="width:70px;height:70px;border-radius:50%;background:var(--primary-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;color:var(--primary);">✓</div>
+    <h2>Order placed successfully!</h2>
+    <p>Thank you, <strong id="conf-name"></strong>. Your order <strong id="conf-id"></strong> of <strong id="conf-total"></strong> will be delivered to your address in 2–5 business days.</p>
+    <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  renderShell("shop");
+
+  const items = cartLineItems();
+  if (!items.length) {
+    document.getElementById("checkout-section").innerHTML = `<div class="container"><div class="empty-state"><h3>Your cart is empty</h3><p>Add something to your cart before checking out.</p><a href="shop.html" class="btn btn-primary">Continue Shopping</a></div></div>`;
+  }
+
+  function renderCheckoutSummary() {
+    const items = cartLineItems();
+    const t = calcTotals(items);
+    document.getElementById("checkout-summary").innerHTML = `
+      <h3 style="margin-bottom:18px;">Order Summary</h3>
+      ${items.map(i => `<div class="summary-row"><span>${i.product.name} × ${i.qty}</span><span>${money(i.lineTotal)}</span></div>`).join("")}
+      <div class="summary-row" style="border-top:1px solid var(--border); padding-top:12px; margin-top:12px;"><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+      ${t.couponDiscount ? `<div class="summary-row discount"><span>Coupon Discount</span><span>− ${money(t.couponDiscount)}</span></div>` : ""}
+      <div class="summary-row"><span>Delivery</span><span>${t.delivery === 0 ? "FREE" : money(t.delivery)}</span></div>
+      <div class="summary-row total"><span>Total</span><span>${money(t.finalTotal)}</span></div>
+    `;
+  }
+  renderCheckoutSummary();
+
+  document.querySelectorAll('input[name="payment"]').forEach(r => {
+    r.addEventListener("change", () => {
+      document.querySelectorAll(".pay-option").forEach(o => o.classList.remove("active"));
+      r.closest(".pay-option").classList.add("active");
+    });
+  });
+
+  const user = getUser();
+  if (user) {
+    document.getElementById("co-name").value = user.name || "";
+    document.getElementById("co-email").value = user.email || "";
+    document.getElementById("co-mobile").value = user.mobile || "";
+  }
+
+  const form = document.getElementById("checkout-form");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      let valid = true;
+      const fields = {
+        "co-name": v => v.trim().length > 1,
+        "co-mobile": v => /^[6-9]\d{9}$/.test(v.trim()),
+        "co-email": v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+        "co-address": v => v.trim().length > 5,
+        "co-city": v => v.trim().length > 1,
+        "co-state": v => v.trim().length > 1,
+        "co-pin": v => /^\d{6}$/.test(v.trim()),
+      };
+      Object.entries(fields).forEach(([id, test]) => {
+        const el = document.getElementById(id);
+        const wrap = el.closest(".form-field");
+        if (!test(el.value)) { wrap.classList.add("error"); valid = false; }
+        else wrap.classList.remove("error");
+      });
+      if (!valid) return;
+
+      const t = calcTotals(cartLineItems());
+      const orderId = "VLR" + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById("conf-name").textContent = document.getElementById("co-name").value.trim();
+      document.getElementById("conf-id").textContent = "#" + orderId;
+      document.getElementById("conf-total").textContent = money(t.finalTotal);
+
+      setCart([]);
+      setAppliedCoupon(null);
+      document.getElementById("checkout-section").style.display = "none";
+      document.getElementById("order-confirmation").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+</script>
+</body>
+</html>
